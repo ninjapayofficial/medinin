@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:medinin_v1/patient.dart';
 import 'package:medinin_v1/patient_details_page.dart';
@@ -8,7 +7,7 @@ import 'package:medinin_v1/add_patient_page.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medinin_v1/database_helper.dart';
 
 class PatientListPage extends StatefulWidget {
   @override
@@ -17,28 +16,20 @@ class PatientListPage extends StatefulWidget {
 
 class _PatientListPageState extends State<PatientListPage> {
   List<Patient> _patients = [];
-  Patient? _selectedPatient;
+  final dbHelper = DatabaseHelper.instance;
 
   @override
   void initState() {
     super.initState();
-    _getPatients();
-  }
-
-  void _savePatients(List<Patient> patients) async {
-    final prefs = await SharedPreferences.getInstance();
-    final json = jsonEncode(patients);
-    await prefs.setString('patients', json);
+    _getPatients().then((patients) {
+      setState(() {
+        _patients = patients;
+      });
+    });
   }
 
   Future<List<Patient>> _getPatients() async {
-    final prefs = await SharedPreferences.getInstance();
-    final patientListJson = prefs.getString('patientList') ?? '[]';
-    final List<dynamic> patientListDynamic = json.decode(patientListJson);
-    final List<Patient> patientList = patientListDynamic
-        .map((patientJson) => Patient.fromJson(patientJson))
-        .toList();
-    return patientList;
+    return await dbHelper.getPatients();
   }
 
   void _navigateToPatientDetails(Patient patient) {
@@ -49,11 +40,11 @@ class _PatientListPageState extends State<PatientListPage> {
     );
   }
 
-  void _addPatient(Patient patient) {
+  void _addPatient(Patient patient) async {
+    int newPatientId = await dbHelper.insert(patient);
     setState(() {
-      _patients.add(patient);
+      _patients.add(patient.copyWith(id: newPatientId));
     });
-    _savePatients(_patients);
   }
 
   void _navigateToAddPatient() async {
@@ -68,34 +59,13 @@ class _PatientListPageState extends State<PatientListPage> {
     }
   }
 
-  void _deletePatient(Patient patient) {
-    setState(() {
-      _patients.remove(patient);
-    });
-    _savePatients(_patients);
-  }
-
-  void _showDeleteConfirmationDialog(Patient patient) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Patient'),
-        content: Text('Are you sure you want to delete ${patient.name}?'),
-        actions: [
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.pop(context),
-          ),
-          TextButton(
-            child: Text('Delete'),
-            onPressed: () {
-              _deletePatient(patient);
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
+  void _deletePatient(Patient patient) async {
+    int deletedRows = await dbHelper.delete(patient.id!);
+    if (deletedRows > 0) {
+      setState(() {
+        _patients.remove(patient);
+      });
+    }
   }
 
   void _downloadBackup() async {
@@ -109,7 +79,7 @@ class _PatientListPageState extends State<PatientListPage> {
     final csvData = List<List<String>>.from([
       ['Name', 'Date of Birth', 'Gender', 'Phone Number', 'Email'],
       ...patients.map((p) => [
-            p.name,
+            p.fullName,
             p.dob ?? '',
             p.gender ?? '',
             p.phoneNumber ?? '',
@@ -151,16 +121,16 @@ class _PatientListPageState extends State<PatientListPage> {
         itemBuilder: (context, index) {
           final patient = _patients[index];
           return Dismissible(
-            key: Key(patient.name),
+            key: Key(patient.fullName),
             onDismissed: (direction) {
-              _showDeleteConfirmationDialog(patient);
+              _deletePatient(patient);
             },
             background: Container(
               color: Colors.red,
               child: Icon(Icons.delete, color: Colors.white),
             ),
             child: ListTile(
-              title: Text(patient.name),
+              title: Text(patient.fullName),
               onTap: () {
                 _navigateToPatientDetails(patient);
               },

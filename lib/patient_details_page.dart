@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:medinin_v1/patient.dart';
 
+import 'package:flutter/material.dart';
+import 'package:medinin_v1/patient.dart';
+
 class PatientDetailsPage extends StatelessWidget {
   final Patient patient;
 
@@ -15,7 +18,7 @@ class PatientDetailsPage extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Name: ${patient.name}'),
+          Text('Name: ${patient.fullName}'),
           Text('Date of Birth: ${patient.dob}'),
           Text('Gender: ${patient.gender}'),
           Text('Phone Number: ${patient.phoneNumber}'),

@@ -12,7 +12,7 @@ class AddPatientPage extends StatefulWidget {
 
 class _AddPatientPageState extends State<AddPatientPage> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
+  String _fullName = '';
   String _dob = '';
   String _gender = '';
   String _phoneNumber = '';
@@ -23,7 +23,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
       _formKey.currentState!.save();
 
       final newPatient = Patient(
-        name: _name,
+        fullName: _fullName,
         dob: _dob,
         gender: _gender,
         phoneNumber: _phoneNumber,
@@ -58,7 +58,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   return null;
                 },
                 onSaved: (value) {
-                  _name = value!;
+                  _fullName = value!;
                 },
               ),
               TextFormField(
