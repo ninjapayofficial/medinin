@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:medinin_doc/patient.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
+import 'database_helper.dart';
 
 class ReportsTab extends StatefulWidget {
   final Patient patient;
@@ -17,6 +20,25 @@ class ReportsTab extends StatefulWidget {
 
 class _ReportsTabState extends State<ReportsTab> {
   List<Report> _reports = [];
+  final _dbHelper = DatabaseHelper.instance;
+
+  Future<void> _saveReport(Report report) async {
+    await _dbHelper.insertReport(report, widget.patient.id!);
+    _loadReports();
+  }
+
+  Future<void> _loadReports() async {
+    final reports = await _dbHelper.getReports(widget.patient.id!);
+    setState(() {
+      _reports = reports;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReports();
+  }
 
   // TODO: Implement the database methods for adding, retrieving, and deleting reports
 
@@ -29,7 +51,8 @@ class _ReportsTabState extends State<ReportsTab> {
           final report = _reports[index];
           return ListTile(
             title: Text(report.title),
-            subtitle: Text(report.date.toString()),
+            subtitle: Text(DateFormat('dd MMM h:mm a').format(report.date)),
+            // subtitle: Text(report.date.toString()),
             leading: report.imagePath != null
                 ? Image.file(
                     File(report.imagePath!),
@@ -38,6 +61,17 @@ class _ReportsTabState extends State<ReportsTab> {
                     fit: BoxFit.cover,
                   )
                 : Icon(Icons.image),
+            onTap: () {
+              if (report.imagePath != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        FullScreenImage(imagePath: report.imagePath!),
+                  ),
+                );
+              }
+            },
           );
         },
       ),
@@ -70,20 +104,22 @@ class _ReportsTabState extends State<ReportsTab> {
                     final pickedFile =
                         await picker.getImage(source: ImageSource.gallery);
                     if (pickedFile != null) {
+                      print('Image picked: ${pickedFile.path}');
                       final appDocDir =
                           await getApplicationDocumentsDirectory();
                       final fileName = basename(pickedFile.path);
                       final localFilePath = join(appDocDir.path, fileName);
                       final localFile =
                           await File(pickedFile.path).copy(localFilePath);
+                      print('Image copied to: ${localFile.path}');
 
                       final newReport = Report(
                         imagePath: localFile.path,
                         title: titleController.text,
                         date: DateTime.now(),
                       );
-                      // TODO: Save the new report to the database and update the UI
-
+                      await _saveReport(newReport);
+                      print('Report saved to database');
                       Navigator.pop(context);
                     } else {
                       print('No image selected.');
@@ -106,4 +142,25 @@ class Report {
   final String? imagePath;
 
   Report({required this.title, required this.date, this.imagePath});
+}
+
+class FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  FullScreenImage({required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Full Screen Image'),
+      ),
+      body: Center(
+        child: Image.file(
+          File(imagePath),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
 }
