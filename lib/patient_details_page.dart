@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:medinin_v1/patient.dart';
+import 'package:medinin_doc/patient.dart';
 
 import 'package:flutter/material.dart';
-import 'package:medinin_v1/patient.dart';
+import 'package:medinin_doc/patient.dart';
 
 class PatientDetailsPage extends StatelessWidget {
   final Patient patient;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medinin_v1/patient.dart';
+import 'package:medinin_doc/patient.dart';
 
+// Define the AddPatientPage StatefulWidget, which accepts a callback function called onAddPatient
 class AddPatientPage extends StatefulWidget {
   final Function(Patient) onAddPatient;
 
@@ -10,15 +11,21 @@ class AddPatientPage extends StatefulWidget {
   _AddPatientPageState createState() => _AddPatientPageState();
 }
 
+// Define the state for the AddPatientPage StatefulWidget
 class _AddPatientPageState extends State<AddPatientPage> {
+  // Create a GlobalKey to access the form's state
   final _formKey = GlobalKey<FormState>();
+
+  // Define the state variables for each form field
   String _fullName = '';
   String _dob = '';
   String _gender = '';
   String _phoneNumber = '';
   String _email = '';
 
+  // Function to handle the form submission
   void _submitForm() {
+    // If the form is valid, save the form data and create a new Patient object
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -30,14 +37,17 @@ class _AddPatientPageState extends State<AddPatientPage> {
         email: _email,
       );
 
+      // Call the onAddPatient callback with the newPatient object
       widget.onAddPatient(newPatient);
 
+      // Pop the current page from the navigation stack to return to the previous page
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Return a Scaffold widget to create the basic structure of the page
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Patient'),
@@ -63,52 +73,29 @@ class _AddPatientPageState extends State<AddPatientPage> {
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Date of Birth'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the patient\'s date of birth';
-                  }
-                  return null;
-                },
                 onSaved: (value) {
                   _dob = value!;
                 },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Gender'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the patient\'s gender';
-                  }
-                  return null;
-                },
                 onSaved: (value) {
                   _gender = value!;
                 },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Phone Number'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the patient\'s phone number';
-                  }
-                  return null;
-                },
                 onSaved: (value) {
                   _phoneNumber = value!;
                 },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the patient\'s email';
-                  }
-                  return null;
-                },
                 onSaved: (value) {
                   _email = value!;
                 },
               ),
+              // The 'Add Patient' button triggers the _submitForm function when pressed
               ElevatedButton(
                 onPressed: _submitForm,
                 child: Text('Add Patient'),

@@ -7,9 +7,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:medinin_v1/main.dart';
+import 'package:medinin_doc/main.dart';
 
-import 'package:medinin_v1/mainnn.dart';
+import 'package:medinin_doc/mainnn.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

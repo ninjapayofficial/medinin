@@ -1,4 +1,4 @@
-package com.example.medinin_v1
+package com.medinin.doc
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:medinin_v1/patient.dart';
+import 'package:medinin_doc/patient.dart';
 
 class DatabaseHelper {
   static final _databaseName = "Medinin.db";

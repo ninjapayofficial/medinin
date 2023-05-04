@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:medinin_v1/doctor_signup_page.dart';
-// import 'package:medinin_v1/patient_list_page.dart';
+// import 'package:medinin_doc/doctor_signup_page.dart';
+// import 'package:medinin_doc/patient_list_page.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 // void main() {

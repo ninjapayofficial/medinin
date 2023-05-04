@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:medinin_v1/doctor_signup_page.dart';
-// import 'package:medinin_v1/patient_list_page.dart';
+// import 'package:medinin_doc/doctor_signup_page.dart';
+// import 'package:medinin_doc/patient_list_page.dart';
 
 // void main() {
 //   runApp(MyApp());
@@ -24,9 +24,25 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:medinin_v1/doctor_signup_page.dart';
-import 'package:medinin_v1/patient_list_page.dart';
+import 'package:medinin_doc/doctor_signup_page.dart';
+import 'package:medinin_doc/patient_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final MaterialColor myPrimarySwatch = MaterialColor(
+  0xFF1A95AB, // The same value as the `Color.fromARGB()` method
+  <int, Color>{
+    50: Color(0xFFE0F2F3),
+    100: Color(0xFFB2DFDB),
+    200: Color(0xFF80CBC4),
+    300: Color(0xFF4DB6AC),
+    400: Color(0xFF26A69A),
+    500: Color(0xFF1A95AB),
+    600: Color(0xFF00897B),
+    700: Color(0xFF00796B),
+    800: Color(0xFF00695C),
+    900: Color(0xFF004D40),
+  },
+);
 
 void main() {
   runApp(MyApp());
@@ -38,7 +54,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Medinin',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: myPrimarySwatch,
+        primaryColor: Color(0xFFB2DFDB),
+        accentColor: Color(0xFFB2DFDB),
+        fontFamily: 'Montserrat',
       ),
       home: MyHomePage(title: 'Medinin'),
     );

@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:medinin_v1/patient.dart';
-import 'package:medinin_v1/patient_details_page.dart';
-import 'package:medinin_v1/add_patient_page.dart';
+import 'package:medinin_doc/patient.dart';
+import 'package:medinin_doc/patient_details_page.dart';
+import 'package:medinin_doc/add_patient_page.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
-import 'package:medinin_v1/database_helper.dart';
+import 'package:medinin_doc/database_helper.dart';
+import 'package:medinin_doc/patient_history_page.dart';
 
 class PatientListPage extends StatefulWidget {
   @override
@@ -129,12 +130,7 @@ class _PatientListPageState extends State<PatientListPage> {
               color: Colors.red,
               child: Icon(Icons.delete, color: Colors.white),
             ),
-            child: ListTile(
-              title: Text(patient.fullName),
-              onTap: () {
-                _navigateToPatientDetails(patient);
-              },
-            ),
+            child: _buildPatientTile(context, patient),
           );
         },
       ),
@@ -144,4 +140,29 @@ class _PatientListPageState extends State<PatientListPage> {
       ),
     );
   }
+}
+
+ListTile _buildPatientTile(BuildContext context, Patient patient) {
+  return ListTile(
+    title: Text(patient.fullName),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PatientDetailsPage(patient: patient),
+        ),
+      );
+    },
+    trailing: IconButton(
+      icon: Icon(Icons.history),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PatientHistoryPage(patient: patient),
+          ),
+        );
+      },
+    ),
+  );
 }
