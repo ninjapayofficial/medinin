@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
 import 'package:medinin_doc/database_helper.dart';
 import 'package:medinin_doc/patient_history_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 
 class PatientListPage extends StatefulWidget {
   @override
@@ -43,21 +45,18 @@ class _PatientListPageState extends State<PatientListPage> {
 
   void _addPatient(Patient patient) async {
     int newPatientId = await dbHelper.insert(patient);
+    print('New patient ID: $newPatientId, Patient: $patient');
     setState(() {
       _patients.add(patient.copyWith(id: newPatientId));
     });
   }
 
   void _navigateToAddPatient() async {
-    final newPatient = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => AddPatientPage(onAddPatient: _addPatient)),
     );
-
-    if (newPatient != null) {
-      _addPatient(newPatient);
-    }
   }
 
   void _deletePatient(Patient patient) async {
@@ -72,22 +71,64 @@ class _PatientListPageState extends State<PatientListPage> {
   void _downloadBackup() async {
     final patients = await _getPatients();
 
-    // Get the app's document directory
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/patients.csv';
+    List<List<String>> patientData = [
+      [
+        'Patient Name',
+        'Date of Birth',
+        'Gender',
+        'Phone Number',
+        'Email',
+        'Prescription Name',
+        'Prescription Notes',
+        'Prescription Date'
+      ]
+    ];
+
+    for (var patient in patients) {
+      final prefs = await SharedPreferences.getInstance();
+      final patientKey = 'prescriptions_${patient.id}';
+      final prescriptionStrings = prefs.getStringList(patientKey) ?? [];
+
+      if (prescriptionStrings.isEmpty) {
+        patientData.add([
+          patient.fullName,
+          patient.dob ?? '',
+          patient.gender ?? '',
+          patient.phoneNumber ?? '',
+          patient.email ?? '',
+          '',
+          '',
+          '',
+        ]);
+      } else {
+        prescriptionStrings.forEach((prescriptionString) {
+          final parts = prescriptionString.split('|');
+          final prescription = Prescription(
+            name: parts[0],
+            notes: parts[1],
+            date: DateTime.parse(parts[2]),
+          );
+
+          patientData.add([
+            patient.fullName,
+            patient.dob ?? '',
+            patient.gender ?? '',
+            patient.phoneNumber ?? '',
+            patient.email ?? '',
+            prescription.name,
+            prescription.notes,
+            prescription.date.toString(),
+          ]);
+        });
+      }
+    }
+
+    // Get the app's temporary directory
+    final directory = await path_provider.getExternalStorageDirectory();
+    final filePath = '${directory!.path}/patients.csv';
 
     // Write the patient list to a CSV file
-    final csvData = List<List<String>>.from([
-      ['Name', 'Date of Birth', 'Gender', 'Phone Number', 'Email'],
-      ...patients.map((p) => [
-            p.fullName,
-            p.dob ?? '',
-            p.gender ?? '',
-            p.phoneNumber ?? '',
-            p.email ?? ''
-          ]),
-    ]);
-    final csvString = const ListToCsvConverter().convert(csvData);
+    final csvString = const ListToCsvConverter().convert(patientData);
     final csvBytes = utf8.encode(csvString);
     await File(filePath).writeAsBytes(csvBytes);
 
@@ -165,4 +206,12 @@ ListTile _buildPatientTile(BuildContext context, Patient patient) {
       },
     ),
   );
+}
+
+class Prescription {
+  final String name;
+  final String notes;
+  final DateTime date;
+
+  Prescription({required this.name, required this.notes, required this.date});
 }

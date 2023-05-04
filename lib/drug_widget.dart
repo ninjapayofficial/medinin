@@ -159,4 +159,20 @@ class Prescription {
   final DateTime date;
 
   Prescription({required this.name, required this.notes, required this.date});
+
+  factory Prescription.fromJson(Map<String, dynamic> json) {
+    return Prescription(
+      name: json['name'],
+      notes: json['notes'],
+      date: DateTime.parse(json['date']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'notes': notes,
+      'date': date.toIso8601String(),
+    };
+  }
 }

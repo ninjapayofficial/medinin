@@ -15,24 +15,6 @@ class Patient {
     this.email,
   });
 
-  Patient copyWith({
-    int? id,
-    String? fullName,
-    String? dob,
-    String? gender,
-    String? phoneNumber,
-    String? email,
-  }) {
-    return Patient(
-      id: id ?? this.id,
-      fullName: fullName ?? this.fullName,
-      dob: dob ?? this.dob,
-      gender: gender ?? this.gender,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      email: email ?? this.email,
-    );
-  }
-
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
       id: json['id'],
@@ -53,5 +35,23 @@ class Patient {
       'phoneNumber': phoneNumber,
       'email': email,
     };
+  }
+
+  Patient copyWith({
+    int? id,
+    String? fullName,
+    String? dob,
+    String? gender,
+    String? phoneNumber,
+    String? email,
+  }) {
+    return Patient(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      dob: dob ?? this.dob,
+      gender: gender ?? this.gender,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email ?? this.email,
+    );
   }
 }

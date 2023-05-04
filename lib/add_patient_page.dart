@@ -35,6 +35,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
         gender: _gender,
         phoneNumber: _phoneNumber,
         email: _email,
+        // prescriptions: [], // Add this line to pass an empty list of prescriptions
       );
 
       // Call the onAddPatient callback with the newPatient object

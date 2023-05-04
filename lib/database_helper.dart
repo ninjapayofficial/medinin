@@ -48,6 +48,7 @@ class DatabaseHelper {
   Future<int> insert(Patient patient) async {
     Database db = await instance.database;
     var res = await db.insert(table, patient.toJson());
+    print('Inserted patient: $patient, Result: $res');
     return res;
   }
 
