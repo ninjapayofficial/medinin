@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:medinin_doc/patient.dart';
 import 'package:medinin_doc/patient_details_page.dart';
 import 'package:medinin_doc/add_patient_page.dart';
+import 'package:medinin_doc/report_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:csv/csv.dart';
@@ -69,10 +70,19 @@ class _PatientListPageState extends State<PatientListPage> {
   }
 
   void _downloadBackup() async {
+    final _dbHelper = DatabaseHelper.instance;
     final patients = await _getPatients();
 
-    List<List<String>> patientData = [
+    // Group the reports by patient ID
+    final reportsByPatientId = <int, List<Report>>{};
+    for (var patient in patients) {
+      final patientReports = await _dbHelper.getReports(patient.id!);
+      reportsByPatientId[patient.id!] = patientReports;
+    }
+
+    List<List<String>> backupData = [
       [
+        'Patient ID',
         'Patient Name',
         'Date of Birth',
         'Gender',
@@ -80,28 +90,37 @@ class _PatientListPageState extends State<PatientListPage> {
         'Email',
         'Prescription Name',
         'Prescription Notes',
-        'Prescription Date'
-      ]
+        'Prescription Date',
+        'Report Title',
+        'Report Date',
+        'Image Path',
+      ],
     ];
 
     for (var patient in patients) {
       final prefs = await SharedPreferences.getInstance();
       final patientKey = 'prescriptions_${patient.id}';
       final prescriptionStrings = prefs.getStringList(patientKey) ?? [];
+      final patientReports = reportsByPatientId[patient.id] ?? [];
 
-      if (prescriptionStrings.isEmpty) {
-        patientData.add([
+      if (prescriptionStrings.isEmpty && patientReports.isEmpty) {
+        // Add an entry with patient details only
+        backupData.add([
+          patient.id.toString(),
           patient.fullName,
           patient.dob ?? '',
           patient.gender ?? '',
           patient.phoneNumber ?? '',
           patient.email ?? '',
-          '',
-          '',
-          '',
+          '', // Prescription Name
+          '', // Prescription Notes
+          '', // Prescription Date
+          '', // Report Title
+          '', // Report Date
+          '', // Image Path
         ]);
       } else {
-        prescriptionStrings.forEach((prescriptionString) {
+        for (var prescriptionString in prescriptionStrings) {
           final parts = prescriptionString.split('|');
           final prescription = Prescription(
             name: parts[0],
@@ -109,7 +128,8 @@ class _PatientListPageState extends State<PatientListPage> {
             date: DateTime.parse(parts[2]),
           );
 
-          patientData.add([
+          backupData.add([
+            patient.id.toString(),
             patient.fullName,
             patient.dob ?? '',
             patient.gender ?? '',
@@ -118,28 +138,47 @@ class _PatientListPageState extends State<PatientListPage> {
             prescription.name,
             prescription.notes,
             prescription.date.toString(),
+            '', // Report Title
+            '', // Report Date
+            '', // Image Path
           ]);
-        });
+        }
+
+        for (var report in patientReports) {
+          backupData.add([
+            patient.id.toString(),
+            patient.fullName,
+            patient.dob ?? '',
+            patient.gender ?? '',
+            patient.phoneNumber ?? '',
+            patient.email ?? '',
+            '', // Prescription Name
+            '', // Prescription Notes
+            '', // Prescription Date
+            report.title,
+            report.date.toIso8601String(),
+            report.imagePath ?? '',
+          ]);
+        }
       }
     }
 
     // Get the app's temporary directory
     final directory = await path_provider.getExternalStorageDirectory();
-    final filePath = '${directory!.path}/patients.csv';
 
-    // Write the patient list to a CSV file
-    final csvString = const ListToCsvConverter().convert(patientData);
-    final csvBytes = utf8.encode(csvString);
-    await File(filePath).writeAsBytes(csvBytes);
+    // Write the backup list to a CSV file
+    final backupCsvString = const ListToCsvConverter().convert(backupData);
+    final backupCsvBytes = utf8.encode(backupCsvString);
+    await File('${directory!.path}/backup.csv').writeAsBytes(backupCsvBytes);
 
     // Show a snackbar with the file path and download button
     final snackBar = SnackBar(
-      content: Text('Backup downloaded to $filePath'),
+      content: Text('Backup downloaded to ${directory.path}/backup.csv'),
       action: SnackBarAction(
         label: 'Open',
         onPressed: () {
           // Open the backup file
-          OpenFile.open(filePath);
+          OpenFile.open('${directory.path}/backup.csv');
         },
       ),
     );

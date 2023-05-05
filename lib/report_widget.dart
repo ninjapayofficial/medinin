@@ -22,11 +22,6 @@ class _ReportsTabState extends State<ReportsTab> {
   List<Report> _reports = [];
   final _dbHelper = DatabaseHelper.instance;
 
-  Future<void> _saveReport(Report report) async {
-    await _dbHelper.insertReport(report, widget.patient.id!);
-    _loadReports();
-  }
-
   Future<void> _loadReports() async {
     final reports = await _dbHelper.getReports(widget.patient.id!);
     setState(() {
@@ -40,8 +35,6 @@ class _ReportsTabState extends State<ReportsTab> {
     _loadReports();
   }
 
-  // TODO: Implement the database methods for adding, retrieving, and deleting reports
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +45,6 @@ class _ReportsTabState extends State<ReportsTab> {
           return ListTile(
             title: Text(report.title),
             subtitle: Text(DateFormat('dd MMM h:mm a').format(report.date)),
-            // subtitle: Text(report.date.toString()),
             leading: report.imagePath != null
                 ? Image.file(
                     File(report.imagePath!),
@@ -117,9 +109,12 @@ class _ReportsTabState extends State<ReportsTab> {
                         imagePath: localFile.path,
                         title: titleController.text,
                         date: DateTime.now(),
+                        patientId: widget.patient.id!,
                       );
-                      await _saveReport(newReport);
+                      await _dbHelper.insertReport(
+                          newReport, widget.patient.id!);
                       print('Report saved to database');
+                      _loadReports();
                       Navigator.pop(context);
                     } else {
                       print('No image selected.');
@@ -136,14 +131,21 @@ class _ReportsTabState extends State<ReportsTab> {
   }
 }
 
+//
 class Report {
   final String title;
   final DateTime date;
   final String? imagePath;
+  final int patientId; // Add this field
 
-  Report({required this.title, required this.date, this.imagePath});
+  Report(
+      {required this.title,
+      required this.date,
+      this.imagePath,
+      required this.patientId}); // Add this field to the constructor
 }
 
+// Show image in full screen
 class FullScreenImage extends StatelessWidget {
   final String imagePath;
 

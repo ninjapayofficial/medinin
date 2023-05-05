@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:medinin_doc/patient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -141,7 +142,8 @@ class _DrugsTabState extends State<DrugsTab> {
           return ListTile(
             title: Text(prescription.name),
             subtitle: Text(prescription.notes),
-            trailing: Text(prescription.date.toString()),
+            trailing:
+                Text(DateFormat('dd MMM h:mm a').format(prescription.date)),
           );
         }).toList(),
       ),
