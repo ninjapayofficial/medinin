@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:medinin_doc/patient.dart';
 import 'package:medinin_doc/patient_details_page.dart';
 import 'package:medinin_doc/add_patient_page.dart';
@@ -12,6 +13,8 @@ import 'package:medinin_doc/database_helper.dart';
 import 'package:medinin_doc/patient_history_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
+
+import 'vital_widget.dart';
 
 class PatientListPage extends StatefulWidget {
   @override
@@ -73,6 +76,18 @@ class _PatientListPageState extends State<PatientListPage> {
     final _dbHelper = DatabaseHelper.instance;
     final patients = await _getPatients();
 
+    // Load the vitals data
+    final vitalsByPatientId = <int, List<Vital>>{};
+    for (var patient in patients) {
+      final prefs = await SharedPreferences.getInstance();
+      final patientKey = 'vitals_${patient.id}';
+      final vitalStrings = prefs.getStringList(patientKey) ?? [];
+      final patientVitals = vitalStrings
+          .map((vitalJson) => Vital.fromJson(json.decode(vitalJson)))
+          .toList();
+      vitalsByPatientId[patient.id!] = patientVitals;
+    }
+
     // Group the reports by patient ID
     final reportsByPatientId = <int, List<Report>>{};
     for (var patient in patients) {
@@ -94,6 +109,14 @@ class _PatientListPageState extends State<PatientListPage> {
         'Report Title',
         'Report Date',
         'Image Path',
+        'Vital Date',
+        'Body Weight',
+        'Blood Pressure',
+        'Temperature',
+        'Heart Rate',
+        'Sugar Level',
+        'SpO2',
+        'Vital Notes',
       ],
     ];
 
@@ -102,8 +125,11 @@ class _PatientListPageState extends State<PatientListPage> {
       final patientKey = 'prescriptions_${patient.id}';
       final prescriptionStrings = prefs.getStringList(patientKey) ?? [];
       final patientReports = reportsByPatientId[patient.id] ?? [];
+      final patientVitals = vitalsByPatientId[patient.id] ?? [];
 
-      if (prescriptionStrings.isEmpty && patientReports.isEmpty) {
+      if (prescriptionStrings.isEmpty &&
+          patientReports.isEmpty &&
+          patientVitals.isEmpty) {
         // Add an entry with patient details only
         backupData.add([
           patient.id.toString(),
@@ -118,6 +144,14 @@ class _PatientListPageState extends State<PatientListPage> {
           '', // Report Title
           '', // Report Date
           '', // Image Path
+          '', // Vital Date
+          '', // Body Weight
+          '', // Blood Pressure
+          '', // Temperature
+          '', // Heart Rate
+          '', // Sugar Level
+          '', // SpO2
+          '', // Vital Notes
         ]);
       } else {
         for (var prescriptionString in prescriptionStrings) {
@@ -141,6 +175,14 @@ class _PatientListPageState extends State<PatientListPage> {
             '', // Report Title
             '', // Report Date
             '', // Image Path
+            '', // Vital Date
+            '', // Body Weight
+            '', // Blood Pressure
+            '', // Temperature
+            '', // Heart Rate
+            '', // Sugar Level
+            '', // SpO2
+            '', // Vital Notes
           ]);
         }
 
@@ -158,6 +200,40 @@ class _PatientListPageState extends State<PatientListPage> {
             report.title,
             report.date.toIso8601String(),
             report.imagePath ?? '',
+            '', // Vital Date
+            '', // Body Weight
+            '', // Blood Pressure
+            '', // Temperature
+            '', // Heart Rate
+            '', // Sugar Level
+            '', // SpO2
+            '', // Vital Notes
+          ]);
+        }
+
+        for (var vital in patientVitals) {
+          backupData.add([
+            patient.id.toString(),
+            patient.fullName,
+            patient.dob ?? '',
+            patient.gender ?? '',
+            patient.phoneNumber ?? '',
+            patient.email ?? '',
+            '', // Prescription Name
+            '', // Prescription Notes
+            '', // Prescription Date
+            '', // Report Title
+            '', // Report Date
+            '', // Image Path
+            vital.date.toIso8601String(),
+            // Vital Date
+            vital.bodyWeight.toString(), // Body Weight
+            vital.bloodPressure, // Blood Pressure
+            vital.temperature.toString(), // Temperature
+            vital.heartRate.toString(), // Heart Rate
+            vital.sugarLevel.toString(), // Sugar Level
+            vital.spo2.toString(), // SpO2
+            vital.notes, // Vital Notes
           ]);
         }
       }

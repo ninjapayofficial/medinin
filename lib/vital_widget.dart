@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:medinin_doc/patient.dart';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:medinin_doc/patient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VitalsTab extends StatefulWidget {
   final Patient patient;
@@ -24,16 +25,43 @@ class _VitalsTabState extends State<VitalsTab> {
   TextEditingController _spo2Controller = TextEditingController();
   TextEditingController _notesController = TextEditingController();
 
+  Future<void> _saveVitals() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> vitalsJson =
+        _vitals.map((vital) => json.encode(vital.toJson())).toList();
+    await prefs.setStringList('vitals_${widget.patient.id}', vitalsJson);
+
+    print(
+        'Vitals saved: $vitalsJson'); // Add this line to check if the data is being saved
+  }
+
+  Future<void> _loadVitals() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? vitalsJson =
+        prefs.getStringList('vitals_${widget.patient.id}');
+    if (vitalsJson != null) {
+      setState(() {
+        _vitals = vitalsJson
+            .map((vitalJson) => Vital.fromJson(json.decode(vitalJson)))
+            .toList();
+      });
+
+      print(
+          'Vitals loaded: $vitalsJson'); // Add this line to check if the data is being loaded
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // Load Vitals from the database or API here
+    _loadVitals(); // Load Vitals from the database or API here
   }
 
   void _addVital() {
     Vital newVital = Vital(
       id: 0, // This should be replaced with the actual id from the database or API
       patientId: widget.patient.id!.toInt(),
+      date: DateTime.now(),
       bodyWeight: _bodyWeightController.text,
       bloodPressure: _bloodPressureController.text,
       temperature: _temperatureController.text,
@@ -47,7 +75,7 @@ class _VitalsTabState extends State<VitalsTab> {
       _vitals.insert(0, newVital);
     });
 
-    // Save the new vital to the database or API here
+    _saveVitals(); // Save the new vital to the database or API here
   }
 
   void _showAddVitalDialog(BuildContext context) {
@@ -122,6 +150,7 @@ class _VitalsTabState extends State<VitalsTab> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text('Date: ${DateFormat('yyyy-MM-dd').format(vital.date)}'),
                 Text('Body weight: ${vital.bodyWeight}'),
                 Text('Blood Pressure: ${vital.bloodPressure}'),
                 Text('Temperature: ${vital.temperature}'),
@@ -146,6 +175,7 @@ class _VitalsTabState extends State<VitalsTab> {
 class Vital {
   int id;
   int patientId;
+  final DateTime date; // Remove 'int' from this line
   String bodyWeight;
   String bloodPressure;
   String temperature;
@@ -157,6 +187,7 @@ class Vital {
   Vital({
     required this.id,
     required this.patientId,
+    required this.date,
     required this.bodyWeight,
     required this.bloodPressure,
     required this.temperature,
@@ -170,6 +201,7 @@ class Vital {
     return Vital(
       id: json['id'],
       patientId: json['patient_id'],
+      date: DateTime.parse(json['date']),
       bodyWeight: json['body_weight'],
       bloodPressure: json['blood_pressure'],
       temperature: json['temperature'],
@@ -184,6 +216,7 @@ class Vital {
     return {
       'id': id,
       'patient_id': patientId,
+      'date': date.toIso8601String(),
       'body_weight': bodyWeight,
       'blood_pressure': bloodPressure,
       'temperature': temperature,
