@@ -1,35 +1,12 @@
-// import 'package:flutter/material.dart';
-// import 'package:medinin_doc/doctor_signup_page.dart';
-// import 'package:medinin_doc/patient_list_page.dart';
-
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'MediNin',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         visualDensity: VisualDensity.adaptivePlatformDensity,
-//       ),
-//       home: DoctorSignupPage(),
-//       routes: {
-//         '/patientList': (context) => PatientListPage(),
-//       },
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:medinin_doc/doctor_signup_page.dart';
 import 'package:medinin_doc/patient_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '3D_anatomy.dart';
+
 final MaterialColor myPrimarySwatch = MaterialColor(
-  0xFF1A95AB, // The same value as the `Color.fromARGB()` method
+  0xFF1A95AB,
   <int, Color>{
     50: Color(0xFFE0F2F3),
     100: Color(0xFFB2DFDB),
@@ -123,6 +100,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: Text('Patient List'),
+            ),
+            SizedBox(height: 16.0),
+            // Add the 3D Anatomy button
+            // Add the 3D Anatomy button
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Anatomy3DModelViewer(
+                      modelUrl:
+                          'http://anatomymobile.medinin.com/model-mobile/male-torso-up/',
+                    ),
+                  ),
+                );
+              },
+              child: Text('3D Anatomy'),
             ),
             SizedBox(height: 16.0),
             ElevatedButton(

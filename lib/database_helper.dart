@@ -9,6 +9,7 @@ import 'package:path/path.dart';
 import 'package:medinin_doc/patient.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 class DatabaseHelper {
   static final _databaseName = "Medinin.db";
@@ -235,5 +236,22 @@ class DatabaseHelper {
   Future<int> deleteVital(int id) async {
     Database db = await instance.database;
     return await db.delete('vitals', where: 'id = ?', whereArgs: [id]);
+  }
+
+  //3D Anatomy
+  Future<String> downloadAndSaveModel(String url) async {
+    // Download the 3D model
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to download 3D model from $url');
+    }
+
+    // Save the 3D model to local storage
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/model.obj';
+    final file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+
+    return filePath;
   }
 }

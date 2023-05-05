@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Medinin - Head 3D Model</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, user-scalable=no">
+    <!-- Replace the following links with the appropriate ones for your project -->
+    <link rel='stylesheet' href='YOUR_CSS_LINK' />
+    <script src="YOUR_JAVASCRIPT_LINK"></script>
+</head>
+
+<body class="mobile_model_pg">
+    <div id="content">
+        <div id="modelContSec">
+            <div id="player"></div>
+        </div>
+        <div id="buttons"></div>
+        <div class="container hide js_zoom_sec">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="slider_wrapper">
+                        <div class="pos_rel">
+                            <input class="rangeSlider" type="range" min="0" max="100" step="1" value="10" />
+                            <span class="filled_sec"></span>
+                            <i class="fa fa-crosshairs js_reset_model"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    // Replace the following line with the appropriate initialization function for your 3D model
+    YOUR_3D_MODEL_INIT_FUNCTION();
+
+    function changeLayers(_val) {
+        $('.rangeSlider').val(_val).trigger('input');
+    }
+</script>
+
+</html>

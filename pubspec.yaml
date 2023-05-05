@@ -43,6 +43,12 @@ dependencies:
   image_picker: ^0.8.4+1
   path: ^1.8.0
   intl: ^0.17.0
+  flutter_3d_obj: ^0.0.6
+  custom_slider: ^0.0.3
+  flutter_xlider: ^3.4.1
+  flutter_cube: ^0.1.1
+  http: ^0.13.6
+  webview_flutter: ^3.0.4
   
 
 dev_dependencies:
