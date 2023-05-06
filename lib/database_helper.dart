@@ -13,7 +13,7 @@ import 'package:http/http.dart' as http;
 
 class DatabaseHelper {
   static final _databaseName = "Medinin.db";
-  static final _databaseVersion = 1;
+  static final _databaseVersion = 2;
 
   static final table = "patients";
 
@@ -54,6 +54,9 @@ class DatabaseHelper {
   ''');
     // Create reports table
     _createReportsTable(db);
+
+    // Create models table
+    _createModelsTable(db);
   }
 
   Future<int> insert(Patient patient) async {
@@ -239,7 +242,43 @@ class DatabaseHelper {
   }
 
   //3D Anatomy
-  Future<String> downloadAndSaveModel(String url) async {
+
+  // Create models table
+  void _createModelsTable(Database db) async {
+    await db.execute('''
+    CREATE TABLE models (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      url TEXT NOT NULL UNIQUE,
+      local_path TEXT
+    )
+  ''');
+  }
+
+  // Save a 3D model to the database
+  Future<int> saveModel(String name, String url, String localPath) async {
+    Database db = await instance.database;
+    return await db.insert('models', {
+      'name': name,
+      'url': url,
+      'local_path': localPath,
+    });
+  }
+
+  // Get a 3D model from the database using its URL
+  Future<String?> getModelLocalPath(String modelName) async {
+    Database db = await instance.database;
+    final modelData =
+        await db.query('models', where: 'name = ?', whereArgs: [modelName]);
+    if (modelData.isNotEmpty) {
+      return modelData.first['local_path'] as String?;
+    } else {
+      return null;
+    }
+  }
+
+  // Download the model first to load in viewer
+  Future<String> downloadAndSaveModel(String url, String name) async {
     // Download the 3D model
     final response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
@@ -248,9 +287,19 @@ class DatabaseHelper {
 
     // Save the 3D model to local storage
     final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/model.obj';
+    final modelsDirectory = Directory('${directory.path}/models');
+
+    // Create the models directory if it does not exist
+    if (!modelsDirectory.existsSync()) {
+      await modelsDirectory.create(recursive: true);
+    }
+
+    final filePath = '${modelsDirectory.path}/$name.obj';
     final file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
+
+    // Save the local path of the model in the database
+    await saveModel(name, url, filePath);
 
     return filePath;
   }
