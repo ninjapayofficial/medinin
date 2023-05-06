@@ -4,6 +4,7 @@ import 'package:medinin_doc/patient_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '3D_anatomy.dart';
+import 'appointments_list_page.dart';
 
 final MaterialColor myPrimarySwatch = MaterialColor(
   0xFF1A95AB,
@@ -82,6 +83,16 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'lib/assets/images/Medinin_logo2.png',
+                  height: 77, // Replace with the file path of your app logo
+                ),
+              ],
+            ),
+            SizedBox(height: 16.0),
             Text(
               'Welcome, Dr. $_fullName',
               style: Theme.of(context).textTheme.headline5,
@@ -100,6 +111,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: Text('Patient List'),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AppointmentsListPage()),
+                );
+              },
+              child: Text('Appointments'),
             ),
             SizedBox(height: 16.0),
             // Add the 3D Anatomy button
