@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'Welcome, Dr. $_fullName',
               style: Theme.of(context).textTheme.headline5,
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 6.0),
             Text(
               '$_designation, Pincode: $_pincode',
               style: Theme.of(context).textTheme.subtitle1,

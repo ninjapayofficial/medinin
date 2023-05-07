@@ -1,7 +1,9 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'add_appointment_page.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class AppointmentsListPage extends StatefulWidget {
   @override
@@ -12,6 +14,8 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
   DateTime? _selectedDate;
   bool _showPastAppointments = false;
   List<Appointment> _appointments = [];
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   // Helper method to create an Appointment object from a Map
   Appointment _createAppointmentFromMap(Map<String, dynamic> map) {
     return Appointment(
@@ -23,10 +27,67 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     );
   }
 
+  Future<void> _scheduleNotification(Appointment appointment) async {
+    var scheduledNotificationDateTime = appointment.appointmentDate.add(
+      Duration(
+        hours: appointment.appointmentTime.hour,
+        minutes: appointment.appointmentTime.minute -
+            10, // 10 minutes before the appointment
+      ),
+    );
+
+    var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
+      'appointment_reminder_channel',
+      'Appointment Reminders',
+      channelDescription:
+          'This channel is for appointment reminder notifications.',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: false,
+    );
+
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
+
+    print(
+        'Scheduling notification for appointment at $scheduledNotificationDateTime');
+
+    await _flutterLocalNotificationsPlugin.schedule(
+      0,
+      'Appointment Reminder',
+      'You have an appointment with ${appointment.patientName} in 10 minutes',
+      scheduledNotificationDateTime,
+      platformChannelSpecifics,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _loadAppointments();
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    _requestNotificationPermissions();
+  }
+
+  void _requestNotificationPermissions() async {
+    if (Platform.isIOS) {
+      final settings = await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      print('User granted permissions: $settings');
+    }
   }
 
   Future<void> _saveAppointments() async {
@@ -45,10 +106,15 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     setState(() {
       _appointments = appointmentStrings.map((appointmentString) {
         final parts = appointmentString.split('|');
+        final date = DateTime.parse(parts[1]);
+        final time = TimeOfDay.fromDateTime(
+            DateTime(date.year, date.month, date.day).add(Duration(
+                hours: int.parse(parts[2].split(':')[0]),
+                minutes: int.parse(parts[2].split(':')[1]))));
         return Appointment(
           patientName: parts[0],
-          appointmentDate: DateTime.parse(parts[1]),
-          appointmentTime: TimeOfDay.fromDateTime(DateTime.parse(parts[1])),
+          appointmentDate: date,
+          appointmentTime: time,
           appointmentDuration: int.parse(parts[3]),
           notes: parts[4],
         );
@@ -68,6 +134,7 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
       });
     });
     _saveAppointments();
+    _scheduleNotification(appointment); // Schedule the notification
   }
 
   @override
