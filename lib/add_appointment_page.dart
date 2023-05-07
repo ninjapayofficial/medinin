@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AddAppointmentPage extends StatefulWidget {
   @override
@@ -65,7 +66,8 @@ class _AddAppointmentPageState extends State<AddAppointmentPage> {
             ),
             // Add widgets to select the appointment date and time
             ListTile(
-              title: Text('Date: ${_appointmentDate.toLocal()}'),
+              title: Text(
+                  'Date: ${DateFormat.yMMMMd().format(_appointmentDate.toLocal())}'),
               trailing: Icon(Icons.arrow_forward),
               onTap: () => _selectDate(context),
             ),
