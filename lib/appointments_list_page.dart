@@ -1,9 +1,12 @@
 import 'dart:io' show Platform;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'add_appointment_page.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class AppointmentsListPage extends StatefulWidget {
   @override
@@ -27,14 +30,26 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     );
   }
 
-  Future<void> _scheduleNotification(Appointment appointment) async {
-    var scheduledNotificationDateTime = appointment.appointmentDate.add(
-      Duration(
-        hours: appointment.appointmentTime.hour,
-        minutes: appointment.appointmentTime.minute -
-            10, // 10 minutes before the appointment
+  tz.TZDateTime _getScheduledNotificationDateTime(Appointment appointment) {
+    final appointmentDateTime = tz.TZDateTime.from(
+      DateTime(
+        appointment.appointmentDate.year,
+        appointment.appointmentDate.month,
+        appointment.appointmentDate.day,
+        appointment.appointmentTime.hour,
+        appointment.appointmentTime.minute,
       ),
+      tz.local,
     );
+
+    return appointmentDateTime.subtract(Duration(minutes: 10));
+  }
+
+  Future<void> _scheduleNotification(Appointment appointment) async {
+    var scheduledNotificationDateTime =
+        _getScheduledNotificationDateTime(appointment);
+    print(
+        'Scheduling notification for appointment at $scheduledNotificationDateTime');
 
     var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
       'appointment_reminder_channel',
@@ -54,25 +69,55 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     print(
         'Scheduling notification for appointment at $scheduledNotificationDateTime');
 
-    await _flutterLocalNotificationsPlugin.schedule(
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
       0,
       'Appointment Reminder',
       'You have an appointment with ${appointment.patientName} in 10 minutes',
       scheduledNotificationDateTime,
       platformChannelSpecifics,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
   @override
   void initState() {
     super.initState();
+    tz.initializeTimeZones();
     _loadAppointments();
     var initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettingsIOS = IOSInitializationSettings();
+    var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification:
+          (int id, String? title, String? body, String? payload) async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => CupertinoAlertDialog(
+            title: Text(title!),
+            content: Text(body!),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+              )
+            ],
+          ),
+        );
+      },
+    );
+
     var initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String? payload) async {
+      if (payload != null) {
+        debugPrint('notification payload: ' + payload);
+      }
+    });
     _requestNotificationPermissions();
   }
 

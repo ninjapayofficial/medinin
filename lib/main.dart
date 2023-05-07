@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:medinin_doc/doctor_signup_page.dart';
 import 'package:medinin_doc/patient_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '3D_anatomy.dart';
 import 'appointments_list_page.dart';
@@ -23,6 +25,7 @@ final MaterialColor myPrimarySwatch = MaterialColor(
 );
 
 void main() {
+  tz.initializeTimeZones();
   runApp(MyApp());
 }
 
