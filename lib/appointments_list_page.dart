@@ -171,10 +171,20 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     setState(() {
       _appointments.add(appointment);
       _appointments.sort((a, b) {
-        final aDateTime = a.appointmentDate.add(Duration(
-            hours: a.appointmentTime.hour, minutes: a.appointmentTime.minute));
-        final bDateTime = b.appointmentDate.add(Duration(
-            hours: b.appointmentTime.hour, minutes: b.appointmentTime.minute));
+        final aDateTime = DateTime(
+          a.appointmentDate.year,
+          a.appointmentDate.month,
+          a.appointmentDate.day,
+          a.appointmentTime.hour,
+          a.appointmentTime.minute,
+        );
+        final bDateTime = DateTime(
+          b.appointmentDate.year,
+          b.appointmentDate.month,
+          b.appointmentDate.day,
+          b.appointmentTime.hour,
+          b.appointmentTime.minute,
+        );
         return aDateTime.compareTo(bDateTime);
       });
     });
