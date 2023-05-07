@@ -23,11 +23,33 @@ class _MedicalFormsPageState extends State<MedicalFormsPage> {
   late List<String> _popularForms;
   late List<String> _allForms;
   late List<String> _medicalForms = [];
+  late List<String> _filteredMedicalForms = [];
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadMedicalForms();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    String searchText = _searchController.text;
+    if (searchText.isEmpty) {
+      _filteredMedicalForms = List.from(_medicalForms);
+    } else {
+      _filteredMedicalForms = _medicalForms
+          .where(
+              (form) => form.toLowerCase().contains(searchText.toLowerCase()))
+          .toList();
+    }
+    setState(() {});
   }
 
   Future<void> _loadMedicalForms() async {
@@ -41,6 +63,7 @@ class _MedicalFormsPageState extends State<MedicalFormsPage> {
     _allForms = _convertFilenamesToTitles(_allForms);
 
     _medicalForms = [..._popularForms, ..._allForms];
+    _filteredMedicalForms = List.from(_medicalForms); // Add this line
 
     print('Medical forms: $_medicalForms');
 
@@ -135,17 +158,39 @@ class _MedicalFormsPageState extends State<MedicalFormsPage> {
       appBar: AppBar(
         title: Text('Medical Forms'),
       ),
-      body: ListView.builder(
-        itemCount: _medicalForms.length,
-        itemBuilder: (context, index) {
-          final title = _medicalForms[index];
-          return ListTile(
-            title: Text(title),
-            onTap: () {
-              _showPdfOptions(title);
-            },
-          );
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search',
+                hintText: 'Search medical forms',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25.0),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _filteredMedicalForms.length,
+              itemBuilder: (context, index) {
+                final title = _filteredMedicalForms[index];
+                return ListTile(
+                  title: Text(title),
+                  onTap: () {
+                    _showPdfOptions(title);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

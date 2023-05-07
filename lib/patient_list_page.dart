@@ -23,20 +23,34 @@ class PatientListPage extends StatefulWidget {
 
 class _PatientListPageState extends State<PatientListPage> {
   List<Patient> _patients = [];
+  List<Patient> _filteredPatients = [];
   final dbHelper = DatabaseHelper.instance;
 
   @override
   void initState() {
     super.initState();
     _getPatients().then((patients) {
+      patients.sort((a, b) => a.fullName.toLowerCase().compareTo(
+          b.fullName.toLowerCase())); // Sort the patients alphabetically
       setState(() {
         _patients = patients;
+        _filteredPatients = _patients;
       });
     });
   }
 
   Future<List<Patient>> _getPatients() async {
     return await dbHelper.getPatients();
+  }
+
+  // Add a search functionality
+  void _filterPatients(String query) {
+    setState(() {
+      _filteredPatients = _patients
+          .where((patient) =>
+              patient.fullName.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   void _navigateToPatientDetails(Patient patient) {
@@ -51,7 +65,9 @@ class _PatientListPageState extends State<PatientListPage> {
     int newPatientId = await dbHelper.insert(patient);
     print('New patient ID: $newPatientId, Patient: $patient');
     setState(() {
-      _patients.add(patient.copyWith(id: newPatientId));
+      _patients.insert(0,
+          patient.copyWith(id: newPatientId)); // Add the new patient to the top
+      _filteredPatients = _patients;
     });
   }
 
@@ -273,22 +289,38 @@ class _PatientListPageState extends State<PatientListPage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _patients.length,
-        itemBuilder: (context, index) {
-          final patient = _patients[index];
-          return Dismissible(
-            key: Key(patient.fullName),
-            onDismissed: (direction) {
-              _deletePatient(patient);
-            },
-            background: Container(
-              color: Colors.red,
-              child: Icon(Icons.delete, color: Colors.white),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Search',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: _filterPatients,
             ),
-            child: _buildPatientTile(context, patient),
-          );
-        },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _filteredPatients.length,
+              itemBuilder: (context, index) {
+                final patient = _filteredPatients[index];
+                return Dismissible(
+                  key: Key(patient.fullName),
+                  onDismissed: (direction) {
+                    _deletePatient(patient);
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: Icon(Icons.delete, color: Colors.white),
+                  ),
+                  child: _buildPatientTile(context, patient),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddPatient,
