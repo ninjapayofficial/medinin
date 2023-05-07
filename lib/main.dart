@@ -7,6 +7,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '3D_anatomy.dart';
 import 'appointments_list_page.dart';
+import 'medical_form_page.dart';
 
 final MaterialColor myPrimarySwatch = MaterialColor(
   0xFF1A95AB,
@@ -128,7 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SizedBox(height: 16.0),
             // Add the 3D Anatomy button
-            // Add the 3D Anatomy button
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -142,6 +142,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: Text('3D Anatomy'),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MedicalFormsPage()),
+                );
+              },
+              child: Text('Medical Forms'),
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
