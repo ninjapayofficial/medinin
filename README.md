@@ -1,16 +1,30 @@
-# medinin_doc
+# Medinin Patient Management App
 
-A new Flutter project.
+This is a Flutter application that allows users to manage patient information, appointments, medical history, and more. All data is stored locally on the device, with no backend required.
+
+## Features
+
+- Record patient medical history, including drugs, reports, and vitals
+- Download patient data as a CSV file
+- Access medical forms for documentation purposes
+- View 3D anatomy models for patient education
+- Store data locally using shared_preferences(Excel file, CSV)
+- Add, edit and delete patients
+- Add, edit appointments
+- Filter appointments by date
+- Show or hide past appointments
+- Receive notifications 10 minutes before each appointment
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+To run this project, you'll need to have Flutter installed on your machine. Follow the official [Flutter installation guide](https://flutter.dev/docs/get-started/install) to set up Flutter on your system.
 
-A few resources to get you started if this is your first Flutter project:
+Once you have Flutter installed, clone this repository and navigate to the project folder in your terminal. Then, run the following command to download the necessary dependencies:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+flutter pub get
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Now you can run the app on an emulator or a physical device by running:
+
+flutter run
+
+Enjoy using the Medinin Patient Management App!
