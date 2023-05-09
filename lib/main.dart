@@ -117,16 +117,16 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('Patient List'),
             ),
             SizedBox(height: 16.0),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => AppointmentsListPage()),
-            //     );
-            //   },
-            //   child: Text('Appointments'),
-            // ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AppointmentsListPage()),
+                );
+              },
+              child: Text('Appointments'),
+            ),
             SizedBox(height: 16.0),
             // Add the 3D Anatomy button
             ElevatedButton(
@@ -144,15 +144,15 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('3D Anatomy'),
             ),
             SizedBox(height: 16.0),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => MedicalFormsPage()),
-            //     );
-            //   },
-            //   child: Text('Medical Forms'),
-            // ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MedicalFormsPage()),
+                );
+              },
+              child: Text('Medical Forms'),
+            ),
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {

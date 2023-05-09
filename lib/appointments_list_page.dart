@@ -140,7 +140,7 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
     prefs.setStringList(
       'appointments',
       _appointments.map((appointment) {
-        return '${appointment.patientName}|${appointment.appointmentDate.toIso8601String()}|${appointment.appointmentTime.format(context)}|${appointment.appointmentDuration}|${appointment.notes}';
+        return '${appointment.patientName}|${appointment.appointmentDate.toIso8601String()}|${appointment.appointmentTime.hour}:${appointment.appointmentTime.minute}|${appointment.appointmentDuration}|${appointment.notes}';
       }).toList(),
     );
   }
@@ -152,10 +152,9 @@ class _AppointmentsListPageState extends State<AppointmentsListPage> {
       _appointments = appointmentStrings.map((appointmentString) {
         final parts = appointmentString.split('|');
         final date = DateTime.parse(parts[1]);
-        final time = TimeOfDay.fromDateTime(
-            DateTime(date.year, date.month, date.day).add(Duration(
-                hours: int.parse(parts[2].split(':')[0]),
-                minutes: int.parse(parts[2].split(':')[1]))));
+        final time = TimeOfDay(
+            hour: int.parse(parts[2].split(':')[0]),
+            minute: int.parse(parts[2].split(':')[1]));
         return Appointment(
           patientName: parts[0],
           appointmentDate: date,

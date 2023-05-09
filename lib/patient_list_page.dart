@@ -256,25 +256,63 @@ class _PatientListPageState extends State<PatientListPage> {
     }
 
     // Get the app's temporary directory
-    final directory = await path_provider.getExternalStorageDirectory();
+    // final directory = await path_provider.getExternalStorageDirectory(); // android
+    // final directory = await getApplicationDocumentsDirectory(); //ios
+    Directory? directory;
+    if (Platform.isAndroid) {
+      directory = await path_provider.getExternalStorageDirectory(); // android
+    } else if (Platform.isIOS) {
+      directory = await getApplicationDocumentsDirectory(); //ios
+    }
 
-    // Write the backup list to a CSV file
-    final backupCsvString = const ListToCsvConverter().convert(backupData);
-    final backupCsvBytes = utf8.encode(backupCsvString);
-    await File('${directory!.path}/backup.csv').writeAsBytes(backupCsvBytes);
+    if (directory != null) {
+      // Write the backup list to a CSV file
+      final backupCsvString = const ListToCsvConverter().convert(backupData);
+      final backupCsvBytes = utf8.encode(backupCsvString);
+      await File('${directory.path}/backup.csv').writeAsBytes(backupCsvBytes);
 
-    // Show a snackbar with the file path and download button
-    final snackBar = SnackBar(
-      content: Text('Backup downloaded to ${directory.path}/backup.csv'),
-      action: SnackBarAction(
-        label: 'Open',
-        onPressed: () {
-          // Open the backup file
-          OpenFile.open('${directory.path}/backup.csv');
-        },
-      ),
+      // Show a snackbar with the file path and download button
+      final snackBar = SnackBar(
+        content: Text('Backup downloaded to ${directory.path}/backup.csv'),
+        action: SnackBarAction(
+          label: 'Open',
+          onPressed: () {
+            // Open the backup file
+            OpenFile.open('${directory!.path}/backup.csv');
+          },
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  Future<bool?> _showDeleteDialog(Patient patient) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // User must tap a button to close the dialog.
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Patient'),
+          content: Text('Are you sure you want to delete ${patient.fullName}?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(false); // Dismiss the dialog and return false.
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(true); // Dismiss the dialog and return true.
+              },
+            ),
+          ],
+        );
+      },
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -308,8 +346,13 @@ class _PatientListPageState extends State<PatientListPage> {
                 final patient = _filteredPatients[index];
                 return Dismissible(
                   key: Key(patient.fullName),
-                  onDismissed: (direction) {
-                    _deletePatient(patient);
+                  confirmDismiss: (direction) async {
+                    final bool? shouldDelete = await _showDeleteDialog(patient);
+                    if (shouldDelete != null && shouldDelete) {
+                      _deletePatient(patient);
+                      return true;
+                    }
+                    return false;
                   },
                   background: Container(
                     color: Colors.red,
